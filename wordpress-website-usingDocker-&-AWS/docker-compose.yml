@@ -8,7 +8,7 @@ wordpress:
 wordpress_db:
     image: mariadb
     environment:
-        MYSQL_ROOT_PASSWORD: edureka
+        MYSQL_ROOT_PASSWORD: sambit
 
 phpmyadmin:
     image: corbinu/docker-phpmyadmin
@@ -18,4 +18,4 @@ phpmyadmin:
         - 8181:80
     environment:
       MYSQL_USERNAME: root
-      MYSQL_ROOT_PASSWORD: edureka
+      MYSQL_ROOT_PASSWORD: sambit
