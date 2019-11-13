@@ -1,0 +1,142 @@
+
+############################
+
+steps to follow to install kube master:
+
+apt-get update && apt-get install -y apt-transport-https && \
+apt install docker.io -y && \
+     systemctl start docker && \
+     systemctl enable docker && \
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
+cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+deb http://apt.kubernetes.io/ kubernetes-xenial main
+EOF && \
+apt-get update && \
+apt-get install -y kubelet kubeadm kubectl kubernetes-cni
+
+
+kubeadm init
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+kubectl apply -f https://docs.projectcalico.org/v3.4/getting-started/kubernetes/installation/hosted/calico.yaml
+kubectl get pods --all-namespaces
+kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+kubectl get nodes 
+kubectl create -f https://raw.githubusercontent.com/kubernetes/dashboard/master/aio/deploy/recommended/kubernetes-dashboard.yaml
+
+kubectl proxy --address 0.0.0.0 --accept-hosts '.*' &
+
+
+Access the dashboard using the below link
+
+http://<ip>:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/overview?namespace=default
+
+
+#######################################################
+steps for kube worker node:
+Configure the Kubernetes Worker Nodes (k8s-node<n>)
+Setting up cluster nodes is very easy. Just refer back to the "kubeadm init" output logs (/root/kubeadm_init.log). In the last line of the the logs, there is a “kubeadm join” command with token information and other parameters.
+
+apt-get update && apt-get install -y apt-transport-https
+apt install docker.io
+     systemctl start docker
+     systemctl enable docker
+
+
+curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.7.0/bin/linux/amd64/kubectl
+chmod +x ./kubectl
+sudo mv ./kubectl /usr/local/bin/kubectl
+apt-get update && apt-get install -y apt-transport-https
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+deb http://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+apt-get update
+apt-get install -y kubelet kubeadm
+apt-get install -y kubelet kubeadm  kubernetes-cni
+kubeadm join 172.31.26.24:6443 --token hpnfgz.52pq3e95hrsz68c6 --discovery-token-ca-cert-hash sha256:92f783e806fb2b0bd36c2847d276847e78a14e07f86256cdbb4f3d79b9618df8
+
+
+
+
+################################
+https://www.linkedin.com/pulse/automated-service-deployment-using-jenkins-kubernetes-ganaesan
+
+clear
+    2  curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.7.0/bin/linux/amd64/kubectl
+    3  chmod +x ./kubectl
+    4  sudo mv ./kubectl /usr/local/bin/kubectl
+    5  apt-get update && apt-get install -y apt-transport-https
+    6  curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+    7  cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+    8  deb http://apt.kubernetes.io/ kubernetes-xenial main
+    9  EOF
+   10  cat /etc/apt/sources.list.d/kubernetes.list
+   11  cd /etc/apt/sources.list.d/
+   12  ls -lrt
+   13  cat kubernetes.list 
+   14  cat /etc/apt/sources.list.d/kubernetes.list
+   15  apt-get update
+   16  apt-get install -y kubelet kubeadm
+   17  kubeadm init
+   18  ifconfig
+   19  kubeadm init --apiserver-advertise-address=172.31.26.24
+   20  apt-get update && apt-get install -y apt-transport-https
+   21  apt install docker.io
+   22  systemctl start docker
+   23  systemctl enable docker
+   24  apt-get install -y kubelet kubeadm kubectl kubernetes-cni
+   25  kubeadm init
+   26  mkdir -p $HOME/.kube
+   27  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+   28  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+   29  kubectl apply -f https://docs.projectcalico.org/v2.6/getting-started/kubernetes/installation/hosted/kubeadm/1.6/calico.yaml
+       kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+   30  kubectl get pods --all-namespaces
+   31  kubectl get nodes 
+   32  kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml
+   33  kubectl proxy --address 0.0.0.0 --accept-hosts '.*' &
+   34  clear
+   35  pwd
+   36  kubectl get nodes 
+   37  kubectl proxy --address 0.0.0.0 --accept-hosts '.*' &
+   38  ps -ef|grep proxy
+   39  cd
+   40  pwd
+   41  touch dashboard-rolebinding.yaml
+   42  vim dashboard-rolebinding.yaml
+   43  kubectl create -f dashboard-rolebinding.yaml
+   44  history
+
+
+
+dashboard url:
+
+ http://ec2-13-126-13-24.ap-south-1.compute.amazonaws.com
+:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/overview?namespace=default
+
+
+
+vi dashboard-rolebinding.yaml
+ 
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: kubernetes-dashboard
+  labels:
+    k8s-app: kubernetes-dashboard
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: kubernetes-dashboard
+  namespace: kube-system
+  
+  
+kubectl create -f dashboard-rolebinding.yaml     
+
+
+
